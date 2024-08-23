@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTS 정국 짝맞추기 게임</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .game-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .card {
+            width: 80px;
+            height: 120px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+        .card .front,
+        .card .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .card .front {
+            transform: rotateY(180deg);
+            background-size: cover;
+            background-position: center;
+        }
+        .card .back {
+            background-image: url('resource/bts_logo.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            border-color: purple;
+            box-shadow: 0 0 10px purple;
+        }
+        #game-info {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #final-screen {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        #final-screen img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>BTS 정국 짝맞추기 게임</h1>
+        <div id="game-info">
+            <p>Stage: <span id="stage">1</span></p>
+            <p>Time Left: <span id="time">5:00</span></p>
+            <p>Mistakes: <span id="mistakes">0</span></p>
+        </div>
+        <div class="game-board"></div>
+        <div id="final-screen"></div>
+    </div>
+
+    <script>
+        const images = ['Jungkook_1.png', 'Jungkook_2.png', 'Jungkook_3.png', 'Jungkook_4.png', 'Jungkook_5.png', 'Jungkook_6.png', 'Jungkook_7.png', 'Jungkook_8.png', 'Jungkook_9.png'];
+        const gameBoard = document.querySelector('.game-board');
+        const finalScreen = document.getElementById('final-screen');
+        let cards = [...images, ...images];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let mistakes = 0;
+        let currentStage = 0;
+        let timer;
+        let timeLeft;
+
+        const stages = [
+            { time: 300, maxMistakes: Infinity },
+            { time: 180, maxMistakes: 20 },
+            { time: 120, maxMistakes: 15 },
+            { time: 60, maxMistakes: 10 }
+        ];
+
+        function shuffleCards() {
+            cards.sort(() => Math.random() - 0.5);
+        }
+
+        function createGameBoard() {
+            shuffleCards();
+            gameBoard.innerHTML = '';
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.cardIndex = index;
+
+                const front = document.createElement('div');
+                front.classList.add('front');
+                front.style.backgroundImage = `url('resource/${card}')`;
+
+                const back = document.createElement('div');
+                back.classList.add('back');
+
+                cardElement.appendChild(front);
+                cardElement.appendChild(back);
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        function startGame() {
+            currentStage++;
+            if (currentStage > stages.length) {
+                showFinalScreen();
+                return;
+            }
+
+            document.getElementById('stage').textContent = currentStage;
+            mistakes = 0;
+            document.getElementById('mistakes').textContent = mistakes;
+            matchedPairs = 0;
+            timeLeft = stages[currentStage - 1].time;
+            updateTimer();
+
+            createGameBoard();
+
+            // Show all cards for 2 seconds
+            document.querySelectorAll('.card').forEach(card => card.classList.add('flipped'));
+            setTimeout(() => {
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.remove('flipped');
+                    card.addEventListener('click', flipCard);
+                });
+                startTimer();
+            }, 2000);
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert('시간 초과! 다음 스테이지로 넘어갑니다.');
+                    startGame();
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped') && !this.classList.contains('matched')) {
+                this.classList.add('flipped');
+                flippedCards.push(this);
+
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 500);
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const img1 = card1.querySelector('.front').style.backgroundImage;
+            const img2 = card2.querySelector('.front').style.backgroundImage;
+
+            if (img1 === img2) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                card1.removeEventListener('click', flipCard);
+                card2.removeEventListener('click', flipCard);
+                matchedPairs++;
+
+                if (matchedPairs === images.length) {
+                    clearInterval(timer);
+                    alert('스테이지 클리어!');
+                    startGame();
+                }
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                }, 1000);
+                mistakes++;
+                document.getElementById('mistakes').textContent = mistakes;
+
+                if (mistakes >= stages[currentStage - 1].maxMistakes) {
+                    clearInterval(timer);
+                    alert('실수 횟수 초과! 게임 오버!');
+                    startGame();
+                }
+            }
+
+            flippedCards = [];
+        }
+
+        function showFinalScreen() {
+            gameBoard.style.display = 'none';
+            document.getElementById('game-info').style.display = 'none';
+            finalScreen.style.display = 'grid';
+
+            images.forEach(image => {
+                const img = document.createElement('img');
+                img.src = `resource/${image}`;
+                img.alt = 'Jungkook';
+                img.addEventListener('click', () => {
+                    alert('게임 종료!');
+                    location.reload();
+                });
+                finalScreen.appendChild(img);
+            });
+        }
+
+        startGame();
+    </script>
+</div>
+</body>
+</html>
