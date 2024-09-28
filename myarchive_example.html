@@ -1,56 +1,116 @@
-import React, { useState } from 'react';
-import { Heart } from 'lucide-react';
-
-const ChangeableImageCard = () => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const images = [
-    "/resource/low_BTS.png",
-    "/resource/Hi_BTS.png",
-    "/api/placeholder/300/400"
-  ];
-
-  const handleImageChange = (index) => {
-    setCurrentImageIndex(index);
-  };
-
-  return (
-    <div className="max-w-sm mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-      <div className="p-4">
-        <div className="text-xl font-bold mb-2">My Archive</div>
-        <div className="relative">
-          <img src={images[currentImageIndex]} alt="Main" className="w-full rounded-lg" />
-          <div className="absolute top-2 left-2 bg-purple-600 text-white px-2 py-1 rounded">
-            SSR
-          </div>
-          <div className="absolute bottom-2 left-2 bg-pink-400 text-white px-2 py-1 rounded-full">
-            JUNGKOOK
-          </div>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Archive</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 300px;
+        }
+        .card-header {
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .main-image-container {
+            position: relative;
+        }
+        .main-image {
+            width: 100%;
+            height: auto;
+        }
+        .tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #8a2be2;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .name-tag {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: #ff69b4;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .thumbnail-container {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+        }
+        .thumbnail {
+            width: 50px;
+            height: 50px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .thumbnail.active {
+            border-color: #8a2be2;
+        }
+        .likes {
+            padding: 10px;
+            color: #666;
+        }
+        .title {
+            padding: 0 10px;
+            font-weight: bold;
+        }
+        .subtitle {
+            padding: 0 10px 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        .description {
+            padding: 0 10px 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">My Archive</div>
+        <div class="main-image-container">
+            <img id="mainImage" src="resource/hi_bts.png" alt="Main Image" class="main-image">
+            <div class="tag">SSR</div>
+            <div class="name-tag">JUNGKOOK</div>
         </div>
-        <div className="flex justify-center mt-2">
-          {images.map((_, index) => (
-            <img
-              key={index}
-              src={images[index]}
-              alt={`Thumbnail ${index + 1}`}
-              className={`w-16 h-16 mx-1 rounded cursor-pointer ${
-                index === currentImageIndex ? 'border-2 border-purple-600' : ''
-              }`}
-              onClick={() => handleImageChange(index)}
-            />
-          ))}
+        <div class="thumbnail-container">
+            <img src="resource/hi_bts.png" alt="Thumbnail 1" class="thumbnail active" onclick="changeImage('resource/hi_bts.png', this)">
+            <img src="resource/low_bts.png" alt="Thumbnail 2" class="thumbnail" onclick="changeImage('resource/low_bts.png', this)">
         </div>
-        <div className="mt-4 flex items-center">
-          <Heart className="text-gray-500 mr-1" />
-          <span className="text-gray-600">506명이 좋아요</span>
-        </div>
-        <div className="mt-2">
-          <h2 className="text-lg font-semibold">JungKook, "Welcome", #0001</h2>
-          <p className="text-sm text-gray-600">BTS WORLD</p>
-        </div>
-        <p className="mt-2 text-sm text-gray-800">
-          2024년 11월 12일 BTS WORLD에서 공식 업데이트된 "겨울" 테마에서 Jungkook의 특별한 순간이 담긴 모습입니다.
-        </p>
-      </div>
+        <div class="likes">506명이 좋아요</div>
+        <div class="title">JungKook, "Welcome", #0001</div>
+        <div class="subtitle">BTS WORLD</div>
+        <div class="description">2024년 11월 12일 BTS WORLD에서 공식 업데이트된 "겨울" 테마에서 Jungkook의 특별한 순간이 담긴 모습입니다.</div>
     </div>
-  );
-};
+
+    <script>
+        function changeImage(src, thumbnail) {
+            document.getElementById('mainImage').src = src;
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            thumbnail.classList.add('active');
+        }
+    </script>
+</body>
+</html>
